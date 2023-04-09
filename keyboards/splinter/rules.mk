@@ -1,0 +1,2 @@
+SERIAL_DRIVER = bitbang
+SPLIT_KEYBOARD = yes
