@@ -1,4 +1,4 @@
-// Copyright 2023 andornaut (@andornaut)
+// Copyright 2024 andornaut (@andornaut)
 // SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
@@ -18,17 +18,13 @@
 //#define NO_ACTION_LAYER
 //#define NO_ACTION_TAPPING
 //#define NO_ACTION_ONESHOT
-//
 
 // https://docs.qmk.fm/#/feature_debounce_type
 #define DEBOUNCE 10
 
-// handwired
-//#define MATRIX_COL_PINS_RIGHT { B5, B6, B2, B3, B1, F7, F6, F5 }
-//#define MATRIX_ROW_PINS_RIGHT { D4, C6, D7, E6, B4 }
-// pcb v1
-#define MATRIX_COL_PINS_RIGHT { D4, D0, D1, B6, B2, B1, F7, F6 }
-#define MATRIX_ROW_PINS_RIGHT { C6, D7, E6, B4, B5 }
+// pcb v2
+#define MATRIX_COL_PINS_RIGHT { B5, B4, D0, D4, C6, D7, E6 }
+#define MATRIX_ROW_PINS_RIGHT { F7, B1, B3, B2, B6 }
 
 // This method sets the keyboard's handedness by setting a flag in the persistent storage (EEPROM).
 // This is checked when the controller first starts up, and determines what half the keyboard is, and how to orient the keyboard layout.
