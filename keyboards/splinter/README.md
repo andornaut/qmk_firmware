@@ -1,8 +1,8 @@
 # Splinter
 
-A 61-key split columnar keyboard.
+A 62-key split columnar keyboard.
 
-![splinter](https://raw.githubusercontent.com/andornaut/keyboards/main/images/v1.jpg)
+![splinter](https://raw.githubusercontent.com/andornaut/keyboards/main/v2/v2.jpg)
 
 * [@andornaut/splinter-keyboard](https://github.com/andornaut/splinter-keyboard)
 
@@ -12,17 +12,22 @@ A 61-key split columnar keyboard.
 
 ## Documentation
 
-* [Anatomy of a keymap.c](/docs/keymap.md)
 * [Configurator](https://config.qmk.fm/#/test/)
-* [Keycodes](/docs/keycodes.md)
-* [Key overrides](https://docs.qmk.fm/#/feature_key_overrides)
-* [Split keyboard](/docs/feature_split_keyboard.md)
+* [info.json documentation](https://github.com/qmk/qmk_firmware/blob/master/docs/reference_info_json.md) ([Schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema))
+* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
 
 ## Usage
 
 * [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
 
 ```
+# Initial setup
+python -m venv .venv
+source .venv/bin/activate
+python3 -m pip install qmk
+qmk setup
+
+# Build firmware
 make splinter
 make splinter:flash
 ```
