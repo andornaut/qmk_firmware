@@ -29,7 +29,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT, KC_ENT,
         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_BSLS, KC_RSFT,
         //MO(_FL), KC_SPC
-        MO(_FL), KC_SPC,  KC_BSPC,  KC_BSPC
+        MO(_FL), KC_SPC,  KC_BSPC, KC_BSPC
     ),
     [_FL] = LAYOUT(
         // Left
