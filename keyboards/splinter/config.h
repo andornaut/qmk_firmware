@@ -34,7 +34,6 @@
 // This configures the use of I2C support for split keyboard transport (AVR only).
 //#define USE_I2C
 #define SOFT_SERIAL_PIN D2
-#define SPLIT_USB_DETECT
 
 // Enabling this option changes the startup behavior to listen for an active
 // USB communication to delegate which part is master and which is slave.
@@ -44,6 +43,7 @@
 // Do not define SPLIT_USB_DETECT to avoid a bug where the keyboard isn't
 // detected on boot unless it's disconnected and reconnected. Ref:
 // https://old.reddit.com/r/olkb/comments/14cruyi/keyboard_doesnt_work_until_i_reconnect_it/jom8v2b/
+// https://www.reddit.com/r/ErgoMechKeyboards/comments/11qxmn2/a_split_keyboard_made_with_qmk_will_work_only_if/
 //#define SPLIT_USB_DETECT
 
 // This will enable a software watchdog on any side delegated as slave and
