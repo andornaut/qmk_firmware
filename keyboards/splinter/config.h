@@ -44,10 +44,12 @@
 // detected on boot unless it's disconnected and reconnected. Ref:
 // https://old.reddit.com/r/olkb/comments/14cruyi/keyboard_doesnt_work_until_i_reconnect_it/jom8v2b/
 // https://www.reddit.com/r/ErgoMechKeyboards/comments/11qxmn2/a_split_keyboard_made_with_qmk_will_work_only_if/
-//#define SPLIT_USB_DETECT
+#define SPLIT_USB_DETECT
 
 // This will enable a software watchdog on any side delegated as slave and
 // will reboot the keyboard if no successful communication occurs within
 // SPLIT_WATCHDOG_TIMEOUT. This can be particularly helpful when
 // SPLIT_USB_DETECT delegates both sides as slave in some circumstances.
-//#define SPLIT_WATCHDOG_ENABLE
+#define SPLIT_WATCHDOG_ENABLE
+// Increasing the timeout worked around an issue where the right-side would restart every 2 or 3 seconds
+#define SPLIT_WATCHDOG_TIMEOUT 5000
