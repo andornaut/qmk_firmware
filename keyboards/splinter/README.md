@@ -12,11 +12,9 @@ A 62-key split columnar keyboard.
 
 ## Documentation
 
-* [Anatomy of a keymap.c](/docs/keymap.md)
 * [Configurator](https://config.qmk.fm/#/test/)
-* [Keycodes](/docs/keycodes.md)
-* [Key overrides](https://docs.qmk.fm/#/feature_key_overrides)
-* [Split keyboard](/docs/feature_split_keyboard.md)
+* [info.json documentation](https://github.com/qmk/qmk_firmware/blob/master/docs/reference_info_json.md) ([Schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema))
+* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
 
 ## Usage
 
