@@ -1,5 +1,5 @@
 {
-    "debounce": 10,
+    "debounce": 5,
     "development_board": "promicro",
     "diode_direction": "COL2ROW",
     "features": {
@@ -560,6 +560,7 @@
     "usb": {
         "device_version": "2.0.0",
         "pid": "0x0000",
+        "polling_interval": 4,
         "vid": "0xFEED"
     }
 }
