@@ -1,87 +1,56 @@
 # Splinter
 
-A 62-key split columnar keyboard.
+QMK firmware for the [splinter-keyboard](https://github.com/andornaut/splinter-keyboard), which is a 62-key split columnar keyboard.
 
-![splinter](https://raw.githubusercontent.com/andornaut/keyboards/main/v2/v2.jpg)
-
-* [@andornaut/splinter-keyboard](https://github.com/andornaut/splinter-keyboard)
+![splinter](https://raw.githubusercontent.com/andornaut/keyboards/main/v3/v3.jpg)
 
 **Keyboard maintainer**: [andornaut](https://github.com/andornaut)
 
-**Hardware supported**: Pro Micro ATmega32U4
+**Hardware supported**:
 
-## Documentation
+* [Adafruit KB2040](https://www.adafruit.com/product/5302)
+  * [QMK platform docs](https://docs.qmk.fm/platformdev_rp2040)
+  * [Pinout](https://learn.adafruit.com/adafruit-kb2040/pinouts)
+
+## QMK Documentation
 
 * [Configurator](https://config.qmk.fm/#/test/)
 * [info.json documentation](https://github.com/qmk/qmk_firmware/blob/master/docs/reference_info_json.md) ([Schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema))
 * [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
+* [Serial driver](https://docs.qmk.fm/drivers/serial)
 
-## Usage
+## Flashing
 
 * [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
 
-```
-# Initial setup
-python -m venv .venv
-source .venv/bin/activate
-python3 -m pip install qmk
-qmk setup
+1. Run `make splinter:flash`
 
-# Build firmware
-make splinter
-make splinter:flash
-```
+**Method (A) - Boot button**:
 
-### udev
+2. Unplug the USB cable
+3. While holding down the "Boot" button on the microcontroller, plug the USB cable back in
+4. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the rp2040's flash storage to `/media/${USER}/RPI-RP2/`
+   * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
 
-```
-$ sudo vim /etc/udev/rules.d/50-qmk.rules
-### Pro Micro Qwiic 5V/16MHz
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="9206", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+**Method (B) - Reset button**:
 
-$ sudo udevadm control --reload
-```
+This will only work after the QMK firmware has been flashed at least once using Method (A).
 
-## Bootloader
-
-Enter the bootloader via either:
-
-#### Bootmagic reset
-
-1. Run `make splinter:default:flash`
-1. Unplug the USB cable
-1. While holding down the tilde ` key, plug in the USB cable
-
-#### Physical reset button
-
-1. run `make splinter:default:flash`
-1. When it says "Waiting for USB serial port" and starts printing `*` characters, then press the reset button
-1. Follow the steps below for your specific microcontroller ...
-
-##### Pro Micro (USB-C) - 5V/16MHz - ATmega32U4
-
-Either:
-
-* Briefly press the reset button on/connected to the PCB, or
-* Briefly short (connect with a wire) the RST and GND pins on the PCB
-
-##### SparkFun Qwiic Pro Micro - USB-C (ATmega32U4)
-
-* Press the reset button on the microcontroller twice in quick succession
-
-If the above doesn't work, then try the following:
-
-1. Before it says "Waiting for USB serial port", press and hold the reset button on the microcontroller
-1. Once it starts printing `*` characters, release the reset button
+2. Press the reset button on the microcontroller or PCB *twice* in quick succession
+3. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the rp2040's flash storage to `/media/${USER}/RPI-RP2/`
+   * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
 
 ## Developing
 
 * [Complete newbs guide](https://docs.qmk.fm/#/newbs).
 * [Setting up your QMK environment](https://docs.qmk.fm/#/newbs_getting_started)
 
-```
-python3 -m pip install --user qmk
+```bash
+python -m venv .venv
+source .venv/bin/activate
+python3 -m pip install qmk
 
+qmk setup
 qmk setup -H qmk_firmware
 qmk config \
     compile.keyboard=splinter \
@@ -94,9 +63,26 @@ qmk new-keyboard
 qmk compile
 
 # First time to set EEPROM handedness
-qmk flash -bl avrdude-split-left
-qmk flash -bl avrdude-split-right
+# Plug the *left* half in, and then run:
+qmk flash -bl uf2-split-left
+# Plug the *right* half in, and then run:
+qmk flash -bl uf2-split-right
 
 # Thereafter
 qmk flash
+```
+
+### Configure `udev` rules to allow access to the keyboard
+
+```bash
+$ sudo dmesg --follow
+# Connect device via USB and look for a line like:
+# [671276.248574] usb 1-1: New USB device found, idVendor=2e8a, idProduct=8105, bcdDevice= 1.00
+# Note the idVendor and idProduct values
+
+$ sudo vim /etc/udev/rules.d/50-qmk.rules
+### Pro Micro Qwiic 5V/16MHz
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="9206", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+$ sudo udevadm control --reload
 ```
