@@ -98,18 +98,19 @@ The watchdog timer starts after `split_post_init()` — i.e. after the USB polli
 Known failure modes and symptoms:
 
 * Plugging USB into one half sometimes works, sometimes doesn't — USB enumeration took longer than `SPLIT_USB_TIMEOUT`
-* One half appears dead — that half is in a watchdog reboot loop, spending most of its time in the USB polling loop; increasing `SPLIT_USB_TIMEOUT` makes this worse, not better
-* Keypresses drop for several seconds — `SPLIT_WATCHDOG_TIMEOUT` was too long (e.g. the original value of 10000ms meant a 10-second wait before the slave would reboot and reconnect)
-* After switching KVM inputs, the keyboard takes several seconds to respond — the slave was rebooted by the watchdog and is re-polling for USB
-* Setting `SPLIT_CONNECTION_CHECK_TIMEOUT 0` floods the scan loop with serial retries and causes keypresses to be dropped
+* One half appears dead at startup — that half lost the USB detection race; `SPLIT_WATCHDOG_ENABLE` reboots it so it can retry. Increasing `SPLIT_USB_TIMEOUT` makes this worse by extending the unresponsive polling window per reboot cycle.
+* Slave keypresses intermittently drop — a brief TRRS glitch caused `SPLIT_MAX_CONNECTION_ERRORS` to be reached, triggering master-side throttling. The RP2040 scan cycle is ~1000 Hz, so the default of 10 errors accumulates in ~10ms.
+* After switching KVM inputs, the keyboard takes several seconds to respond — USB re-enumeration on the master side, or the slave re-polling for USB after a watchdog reboot
+* Setting `SPLIT_CONNECTION_CHECK_TIMEOUT 0` floods the scan loop with serial timeouts and causes keypresses to be dropped
 
 The values in `config.h` address this:
 
 Setting | Value | Reason
 --- | --- | ---
 `SPLIT_USB_TIMEOUT` | 2000ms (default) | Kept at default to minimise the unresponsive window per reboot. Increasing it makes the "one half dead" symptom worse because the slave spends more time in the polling loop each reboot cycle.
-`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave quickly after communication is lost so it can reconnect. The original value of 10000ms caused keypresses to drop for up to 10 seconds.
-`SPLIT_CONNECTION_CHECK_TIMEOUT` | 500ms | One reconnection attempt per 500ms after a disconnect. Setting this to 0 floods the scan loop with serial retries and causes keypresses to be dropped.
+`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave quickly if it never receives a first ping from the master after boot. Once the first ping is received the watchdog is permanently satisfied and plays no further role.
+`SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms — any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
+`SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
 
 ### Configure udev rules
 
