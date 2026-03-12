@@ -1,68 +1,83 @@
 # Splinter
 
-QMK firmware for the [splinter-keyboard](https://github.com/andornaut/splinter-keyboard), which is a 62-key split columnar keyboard.
+[QMK](https://qmk.fm/) firmware for [splinter](https://github.com/andornaut/splinter-keyboard), a 62-key split columnar keyboard.
 
 ![splinter](https://raw.githubusercontent.com/andornaut/keyboards/main/v3/v3.jpg)
 
 **Keyboard maintainer**: [andornaut](https://github.com/andornaut)
 
-**Hardware supported**:
+**Hardware supported**: [Adafruit KB2040](https://www.adafruit.com/product/5302)
 
-* [Adafruit KB2040](https://www.adafruit.com/product/5302)
-  * [QMK platform docs](https://docs.qmk.fm/platformdev_rp2040)
-  * [Pinout](https://learn.adafruit.com/adafruit-kb2040/pinouts)
+## Versions
 
-## QMK Documentation
-
-* [Configurator](https://config.qmk.fm/#/test/)
-* [info.json documentation](https://github.com/qmk/qmk_firmware/blob/master/docs/reference_info_json.md) ([Schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema))
-* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
-* [Serial driver](https://docs.qmk.fm/drivers/serial)
+Version | Description | Firmware | Layout
+--- | --- | --- | ---
+[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
+[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
+[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
 
 ## Flashing
 
 * [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
 
 1. Run `make splinter:flash`
-
-**Method (A) - Boot button**:
-
-2. Unplug the USB cable
-3. While holding down the "Boot" button on the microcontroller, plug the USB cable back in
-4. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the rp2040's flash storage to `/media/${USER}/RPI-RP2/`
+1. Enter bootloader mode using one of the methods below ("Boot button" vs "Reset button")
+1. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the RP2040's flash storage to `/media/${USER}/RPI-RP2/`
    * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
 
-**Method (B) - Reset button**:
+### Boot button
 
-This will only work after the QMK firmware has been flashed at least once using Method (A).
+This enters the RP2040's native UF2 bootloader. Refer to the [KB2040 pinouts](https://learn.adafruit.com/adafruit-kb2040/pinouts) documentation.
 
-2. Press the reset button on the microcontroller or PCB *twice* in quick succession
-3. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the rp2040's flash storage to `/media/${USER}/RPI-RP2/`
-   * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
+Either:
+
+1. Unplug the USB cable
+1. While holding down the "Boot" button on the microcontroller, plug the USB cable back in
+
+Or, if already plugged in:
+
+1. Hold down the "Boot" button on the microcontroller
+1. Press and release the "Reset" button
+1. Release the "Boot" button
+
+### Reset button (double-tap)
+
+This uses QMK's [double-tap reset](https://docs.qmk.fm/platformdev_rp2040#double-tap) feature, which is enabled via `RP2040_BOOTLOADER_DOUBLE_TAP_RESET` in `config.h`. It only works after the QMK firmware has been flashed at least once using the boot button method.
+
+1. Press the reset button on the microcontroller or PCB *twice* in quick succession
+
+Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive. You will need a second keyboard (or another computer connected via SSH) to run the `udisksctl mount` command in step 3 above.
 
 ## Developing
 
-* [Complete newbs guide](https://docs.qmk.fm/#/newbs).
+* [Complete newbs guide](https://docs.qmk.fm/#/newbs)
+* [Config options](https://docs.qmk.fm/config_options)
+* [Keycodes](https://docs.qmk.fm/keycodes)
+* [keyboard.json schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema)
+* [RP2040 platform](https://docs.qmk.fm/platformdev_rp2040)
+* [Serial driver](https://docs.qmk.fm/drivers/serial)
 * [Setting up your QMK environment](https://docs.qmk.fm/#/newbs_getting_started)
+* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 python3 -m pip install qmk
 
-qmk setup
 qmk setup -H qmk_firmware
 qmk config \
     compile.keyboard=splinter \
     compile.keymap=default \
     flash.keyboard=splinter \
-    flash.keymap=default \
-    new_keyboard.keyboard=splinter \
-    new_keyboard.keymap=default
-qmk new-keyboard
+    flash.keymap=default
 qmk compile
+```
 
-# First time to set EEPROM handedness
+### First-time EEPROM handedness setup
+
+The split halves use `EE_HANDS` to determine handedness. This must be set once per microcontroller.
+
+```bash
 # Plug the *left* half in, and then run:
 qmk flash -bl uf2-split-left
 # Plug the *right* half in, and then run:
@@ -72,17 +87,41 @@ qmk flash -bl uf2-split-right
 qmk flash
 ```
 
-### Configure `udev` rules to allow access to the keyboard
+### Split keyboard reliability
+
+The KB2040 has no hardware USB VBUS sense pin, so QMK automatically forces [`SPLIT_USB_DETECT`](https://docs.qmk.fm/features/split_keyboard#firmware-configuration) on for all ChibiOS/ARM boards that lack `USB_VBUS_PIN` (see `platforms/chibios/chibios_config.h`). This cannot be disabled without a PCB hardware modification.
+
+`SPLIT_USB_DETECT` determines master/slave roles by a software timing race: at boot, each half polls for active USB communication for up to `SPLIT_USB_TIMEOUT` milliseconds. The half that detects USB becomes master; the other becomes slave. **During this polling loop the half is completely unresponsive.** If neither half detects USB within the timeout, both declare themselves slaves, and the keyboard does not function until `SPLIT_WATCHDOG_ENABLE` triggers a reboot and they retry.
+
+The watchdog timer starts after `split_post_init()` — i.e. after the USB polling loop finishes — so `SPLIT_WATCHDOG_TIMEOUT` is independent of `SPLIT_USB_TIMEOUT`.
+
+Known failure modes and symptoms:
+
+* Plugging USB into one half sometimes works, sometimes doesn't — USB enumeration took longer than `SPLIT_USB_TIMEOUT`
+* One half appears dead — that half is in a watchdog reboot loop, spending most of its time in the USB polling loop; increasing `SPLIT_USB_TIMEOUT` makes this worse, not better
+* Keypresses drop for several seconds — `SPLIT_WATCHDOG_TIMEOUT` was too long (e.g. the original value of 10000ms meant a 10-second wait before the slave would reboot and reconnect)
+* After switching KVM inputs, the keyboard takes several seconds to respond — the slave was rebooted by the watchdog and is re-polling for USB
+* Setting `SPLIT_CONNECTION_CHECK_TIMEOUT 0` floods the scan loop with serial retries and causes keypresses to be dropped
+
+The values in `config.h` address this:
+
+Setting | Value | Reason
+--- | --- | ---
+`SPLIT_USB_TIMEOUT` | 2000ms (default) | Kept at default to minimise the unresponsive window per reboot. Increasing it makes the "one half dead" symptom worse because the slave spends more time in the polling loop each reboot cycle.
+`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave quickly after communication is lost so it can reconnect. The original value of 10000ms caused keypresses to drop for up to 10 seconds.
+`SPLIT_CONNECTION_CHECK_TIMEOUT` | 500ms | One reconnection attempt per 500ms after a disconnect. Setting this to 0 floods the scan loop with serial retries and causes keypresses to be dropped.
+
+### Configure udev rules
 
 ```bash
-$ sudo dmesg --follow
+sudo dmesg --follow
 # Connect device via USB and look for a line like:
 # [671276.248574] usb 1-1: New USB device found, idVendor=2e8a, idProduct=8105, bcdDevice= 1.00
 # Note the idVendor and idProduct values
 
-$ sudo vim /etc/udev/rules.d/50-qmk.rules
-### Pro Micro Qwiic 5V/16MHz
-SUBSYSTEMS=="usb", ATTRS{idVendor}=="1b4f", ATTRS{idProduct}=="9206", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+sudo vim /etc/udev/rules.d/50-qmk.rules
+# Add a line like:
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="8105", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
 
-$ sudo udevadm control --reload
+sudo udevadm control --reload
 ```

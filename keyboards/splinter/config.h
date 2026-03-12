@@ -13,3 +13,32 @@
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET // Activates the double-tap behavior
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED GP25 // Specify a optional status led by GPIO number which blinks when entering the bootloader
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
+
+// The KB2040 has no USB_VBUS_PIN, so QMK automatically forces SPLIT_USB_DETECT
+// on for all ChibiOS/ARM boards (see platforms/chibios/chibios_config.h).
+// SPLIT_USB_DETECT uses a polling loop: each half polls for active USB
+// communication for up to SPLIT_USB_TIMEOUT ms at boot. The half that detects
+// USB becomes master; the other becomes slave. During this polling loop the
+// half is completely unresponsive. Keeping SPLIT_USB_TIMEOUT at the default
+// (2000ms) minimises the unresponsive window.
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+
+// Maximum number of failed communication attempts (one per scan cycle) before
+// master assumes slave is disconnected. Set to 0 to disable.
+// Default: 10
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define SPLIT_MAX_CONNECTION_ERRORS 10
+// How long (ms) master blocks connection attempts after flagging slave as disconnected.
+// One attempt is allowed each time this interval elapses.
+// Default: 500
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define SPLIT_CONNECTION_CHECK_TIMEOUT 500
+
+// Enable watchdog on slave side to reboot if communication is lost.
+// The watchdog timer starts after split_post_init() (i.e. after the USB
+// polling loop), so it is independent of SPLIT_USB_TIMEOUT.
+// Default (when unset): 3000ms if SPLIT_USB_TIMEOUT is not defined, else
+//                       SPLIT_USB_TIMEOUT + 100ms (see split_util.c).
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define SPLIT_WATCHDOG_ENABLE
+#define SPLIT_WATCHDOG_TIMEOUT 3000
