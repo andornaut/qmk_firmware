@@ -5,10 +5,6 @@
 
 #include QMK_KEYBOARD_H
 
-// Helpful defines
-#define GRAVE_MODS  (MOD_BIT(KC_LSFT)|MOD_BIT(KC_RSFT)|MOD_BIT(KC_LGUI)|MOD_BIT(KC_RGUI)|MOD_BIT(KC_LALT)|MOD_BIT(KC_RALT))
-#define _______ KC_TRNS
-
 enum keyboard_layers {
  _BL, // Bottom Layer
  _FL  // Function Layer
