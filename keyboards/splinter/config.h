@@ -6,13 +6,12 @@
 
 // This method sets the keyboard's handedness by setting a flag in the persistent storage (EEPROM).
 // This is checked when the controller first starts up, and determines what half the keyboard is, and how to orient the keyboard layout.
-// Must flash the left side at least once using: qmk flash -bl avrdude-split-left
+// Must flash the left side at least once using: qmk flash -bl uf2-split-left
 #define EE_HANDS
 
 // https://docs.qmk.fm/platformdev_rp2040#double-tap
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET // Activates the double-tap behavior
-#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_LED GP25 // Specify a optional status led by GPIO number which blinks when entering the bootloader
-#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
+#define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 500U // Timeout window in ms in which the double tap can occur.
 
 // The KB2040 has no USB_VBUS_PIN, so QMK automatically forces SPLIT_USB_DETECT
 // on for all ChibiOS/ARM boards (see platforms/chibios/chibios_config.h).
@@ -30,6 +29,7 @@
 // 50 errors = ~50ms of consecutive failures tolerated before throttling.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_MAX_CONNECTION_ERRORS 50
+
 // How long (ms) master blocks connection attempts after flagging slave as disconnected.
 // One attempt is allowed each time this interval elapses. Do not set to 0 —
 // that floods the scan loop with serial timeouts and drops keypresses.
@@ -45,3 +45,7 @@
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_WATCHDOG_ENABLE
 #define SPLIT_WATCHDOG_TIMEOUT 3000
+
+// USB polling interval is set to 4ms in keyboard.json (usb.polling_interval).
+// Default is 1ms (1000 Hz). 4ms (250 Hz) adds up to 3ms of input latency but
+// reduces USB overhead. Set to 1 for lowest latency.
