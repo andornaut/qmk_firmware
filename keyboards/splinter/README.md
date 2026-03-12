@@ -93,14 +93,14 @@ The KB2040 has no hardware USB VBUS sense pin, so QMK automatically forces [`SPL
 
 `SPLIT_USB_DETECT` determines master/slave roles by a software timing race: at boot, each half polls for active USB communication for up to `SPLIT_USB_TIMEOUT` milliseconds. The half that detects USB becomes master; the other becomes slave. **During this polling loop the half is completely unresponsive.** If neither half detects USB within the timeout, both declare themselves slaves, and the keyboard does not function until `SPLIT_WATCHDOG_ENABLE` triggers a reboot and they retry.
 
-The watchdog timer starts after `split_post_init()` — i.e. after the USB polling loop finishes — so `SPLIT_WATCHDOG_TIMEOUT` is independent of `SPLIT_USB_TIMEOUT`.
+The watchdog timer starts after `split_post_init()` — i.e. after the USB polling loop finishes — so `SPLIT_WATCHDOG_TIMEOUT` is independent of `SPLIT_USB_TIMEOUT`. The watchdog is only relevant at startup: once the slave receives its first ping from the master, it is permanently satisfied and does not recover from runtime disconnects. Runtime recovery depends on master-side connection throttling (`SPLIT_MAX_CONNECTION_ERRORS` / `SPLIT_CONNECTION_CHECK_TIMEOUT`).
 
 Known failure modes and symptoms:
 
 * Plugging USB into one half sometimes works, sometimes doesn't — USB enumeration took longer than `SPLIT_USB_TIMEOUT`
 * One half appears dead at startup — that half lost the USB detection race; `SPLIT_WATCHDOG_ENABLE` reboots it so it can retry. Increasing `SPLIT_USB_TIMEOUT` makes this worse by extending the unresponsive polling window per reboot cycle.
 * Slave keypresses intermittently drop — a brief TRRS glitch caused `SPLIT_MAX_CONNECTION_ERRORS` to be reached, triggering master-side throttling. The RP2040 scan cycle is ~1000 Hz, so the default of 10 errors accumulates in ~10ms.
-* After switching KVM inputs, the keyboard takes several seconds to respond — USB re-enumeration on the master side, or the slave re-polling for USB after a watchdog reboot
+* After switching KVM inputs, the keyboard takes several seconds to respond — USB re-enumeration on the master side triggers re-detection; recovery time depends on `SPLIT_USB_TIMEOUT` + watchdog cycle. Keeping `SPLIT_USB_TIMEOUT` low helps but cannot eliminate the delay
 * Setting `SPLIT_CONNECTION_CHECK_TIMEOUT 0` floods the scan loop with serial timeouts and causes keypresses to be dropped
 
 The values in `config.h` address this:
