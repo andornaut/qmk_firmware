@@ -8,22 +8,17 @@
 
 **Hardware supported**: [Adafruit KB2040](https://www.adafruit.com/product/5302)
 
-## Versions
-
-Version | Description | Firmware | Layout
---- | --- | --- | ---
-[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
-[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
-[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
-
 ## Flashing
 
-* [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
+Both halves run their own copy of the firmware independently — there is no way to update one half over the TRRS link. Flash each half separately using the same steps:
 
 1. Run `make splinter:flash`
 1. Enter bootloader mode using one of the methods below ("Boot button" vs "Reset button")
 1. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the RP2040's flash storage to `/media/${USER}/RPI-RP2/`
    * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
+   * The keyboard will become unresponsive, so you'll need to use a second keyboard or SSH in from another computer
+   * Alternatively, you could mount the RP2040's flash storage using a GUI disk manager such as `gnome-disks`, which can be done with only a mouse
+1. Repeat for the other half
 
 ### Boot button
 
@@ -46,18 +41,23 @@ This uses QMK's [double-tap reset](https://docs.qmk.fm/platformdev_rp2040#double
 
 1. Press the reset button on the microcontroller or PCB *twice* in quick succession
 
-Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive. You will need a second keyboard (or another computer connected via SSH) to run the `udisksctl mount` command in step 3 above.
+Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive — see step 3 above for alternatives to run the mount command.
+
+### First-time EEPROM handedness setup
+
+The split halves use `EE_HANDS` to determine handedness. This must be set once per microcontroller.
+
+```bash
+# Plug the *left* half in, and then run:
+qmk flash -bl uf2-split-left
+# Plug the *right* half in, and then run:
+qmk flash -bl uf2-split-right
+
+# Thereafter
+qmk flash
+```
 
 ## Developing
-
-* [Complete newbs guide](https://docs.qmk.fm/#/newbs)
-* [Config options](https://docs.qmk.fm/config_options)
-* [Keycodes](https://docs.qmk.fm/keycodes)
-* [keyboard.json schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema)
-* [RP2040 platform](https://docs.qmk.fm/platformdev_rp2040)
-* [Serial driver](https://docs.qmk.fm/drivers/serial)
-* [Setting up your QMK environment](https://docs.qmk.fm/#/newbs_getting_started)
-* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
 
 ```bash
 python -m venv .venv
@@ -73,18 +73,52 @@ qmk config \
 qmk compile
 ```
 
-### First-time EEPROM handedness setup
+### References
 
-The split halves use `EE_HANDS` to determine handedness. This must be set once per microcontroller.
+* [Complete newbs guide](https://docs.qmk.fm/#/newbs)
+* [Config options](https://docs.qmk.fm/config_options)
+* [Keycodes](https://docs.qmk.fm/keycodes)
+* [keyboard.json schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema)
+* [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
+* [RP2040 platform](https://docs.qmk.fm/platformdev_rp2040)
+* [Serial driver](https://docs.qmk.fm/drivers/serial)
+* [Setting up your QMK environment](https://docs.qmk.fm/#/newbs_getting_started)
+* [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
+
+## Troubleshooting
+
+### Debug console
+
+The `console` feature is enabled in `keyboard.json`, and `process_record_user` in `keymap.c` logs key events when the console is active. To read the debug output:
+
+1. Build and flash the firmware: `qmk flash`
+1. Run `qmk console` to connect to the keyboard's HID console and view key event logs
+
+To enable additional QMK debug output (matrix scanning, split transport, etc.), add the following to `keymap.c` in `keyboard_post_init_user`:
+
+```c
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+    // debug_matrix = true;   // Log matrix scan events
+    // debug_keyboard = true; // Log keyboard-level events
+}
+```
+
+To disable the console (saves firmware size and a small amount of scan-cycle overhead), set `"console": false` in `keyboard.json` and reflash.
+
+### Configure udev rules
 
 ```bash
-# Plug the *left* half in, and then run:
-qmk flash -bl uf2-split-left
-# Plug the *right* half in, and then run:
-qmk flash -bl uf2-split-right
+sudo dmesg --follow
+# Connect device via USB and look for a line like:
+# [671276.248574] usb 1-1: New USB device found, idVendor=2e8a, idProduct=8105, bcdDevice= 1.00
+# Note the idVendor and idProduct values
 
-# Thereafter
-qmk flash
+sudo vim /etc/udev/rules.d/50-qmk.rules
+# Add a line like:
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="8105", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+sudo udevadm control --reload
 ```
 
 ### Split keyboard reliability
@@ -112,38 +146,10 @@ Setting | Value | Reason
 `SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms — any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
 `SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
 
-### Configure udev rules
+## Versions
 
-```bash
-sudo dmesg --follow
-# Connect device via USB and look for a line like:
-# [671276.248574] usb 1-1: New USB device found, idVendor=2e8a, idProduct=8105, bcdDevice= 1.00
-# Note the idVendor and idProduct values
-
-sudo vim /etc/udev/rules.d/50-qmk.rules
-# Add a line like:
-# SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="8105", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
-
-sudo udevadm control --reload
-```
-
-## Troubleshooting
-
-### Enable debug console
-
-The `console` feature is enabled in `keyboard.json`, and `process_record_user` in `keymap.c` logs key events when the console is active. To read the debug output:
-
-1. Build and flash the firmware: `qmk flash`
-2. Run `qmk console` to connect to the keyboard's HID console and view key event logs
-
-To enable additional QMK debug output (matrix scanning, split transport, etc.), add the following to `keymap.c` in `keyboard_post_init_user`:
-
-```c
-void keyboard_post_init_user(void) {
-    debug_enable = true;
-    // debug_matrix = true;   // Log matrix scan events
-    // debug_keyboard = true; // Log keyboard-level events
-}
-```
-
-To disable the console (saves firmware size and a small amount of scan-cycle overhead), set `"console": false` in `keyboard.json` and reflash.
+Version | Description | Firmware | Layout
+--- | --- | --- | ---
+[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
+[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
+[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
