@@ -8,6 +8,14 @@
 
 **Hardware supported**: [Adafruit KB2040](https://www.adafruit.com/product/5302)
 
+## Versions
+
+Version | Description | Firmware | Layout
+--- | --- | --- | ---
+[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
+[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
+[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
+
 ## Flashing
 
 Both halves run their own copy of the firmware independently — there is no way to update one half over the TRRS link. Flash each half separately using the same steps:
@@ -75,14 +83,13 @@ qmk compile
 
 ### References
 
-* [Complete newbs guide](https://docs.qmk.fm/#/newbs)
 * [Config options](https://docs.qmk.fm/config_options)
 * [Keycodes](https://docs.qmk.fm/keycodes)
 * [keyboard.json schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema)
-* [Make instructions](https://docs.qmk.fm/#/getting_started_make_guide)
+* [QMK CLI](https://docs.qmk.fm/cli)
 * [RP2040 platform](https://docs.qmk.fm/platformdev_rp2040)
 * [Serial driver](https://docs.qmk.fm/drivers/serial)
-* [Setting up your QMK environment](https://docs.qmk.fm/#/newbs_getting_started)
+* [Setting up your QMK environment](https://docs.qmk.fm/newbs_getting_started)
 * [Split keyboard](https://docs.qmk.fm/features/split_keyboard)
 
 ## Troubleshooting
@@ -145,11 +152,3 @@ Setting | Value | Reason
 `SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave quickly if it never receives a first ping from the master after boot. Once the first ping is received the watchdog is permanently satisfied and plays no further role.
 `SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms — any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
 `SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
-
-## Versions
-
-Version | Description | Firmware | Layout
---- | --- | --- | ---
-[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
-[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
-[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
