@@ -126,3 +126,24 @@ sudo vim /etc/udev/rules.d/50-qmk.rules
 
 sudo udevadm control --reload
 ```
+
+## Troubleshooting
+
+### Enable debug console
+
+The `console` feature is enabled in `keyboard.json`, and `process_record_user` in `keymap.c` logs key events when the console is active. To read the debug output:
+
+1. Build and flash the firmware: `qmk flash`
+2. Run `qmk console` to connect to the keyboard's HID console and view key event logs
+
+To enable additional QMK debug output (matrix scanning, split transport, etc.), add the following to `keymap.c` in `keyboard_post_init_user`:
+
+```c
+void keyboard_post_init_user(void) {
+    debug_enable = true;
+    // debug_matrix = true;   // Log matrix scan events
+    // debug_keyboard = true; // Log keyboard-level events
+}
+```
+
+To disable the console (saves firmware size and a small amount of scan-cycle overhead), set `"console": false` in `keyboard.json` and reflash.
