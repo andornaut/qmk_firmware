@@ -12,7 +12,7 @@
 
 Version | Keys | MCU | Features | Firmware | Photo
 --- | --- | --- | --- | --- | ---
-[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62 | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) | Symmetrical enclosures, USB VBUS detection | [splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | |
+[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62 | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) | Symmetrical enclosures, USB VBUS detection | [splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | [![v4](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v4/v4-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v4/v4.jpg)
 [v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62 | [Adafruit KB2040](https://www.adafruit.com/product/5302) (RP2040) | Symmetrical enclosures | [splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-v3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
 [v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Symmetrical enclosures | [splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
 [v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Asymmetrical enclosures, traditional layout | [splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
@@ -57,6 +57,9 @@ Note: after double-tapping reset, the keyboard enters bootloader mode and become
 The split halves use `EE_HANDS` to determine handedness. This must be set once per microcontroller.
 
 ```bash
+# Mount the MCU's storage
+udisksctl mount -b /dev/disk/by-label/RPI-RP2
+
 # Plug the *left* half in, and then run:
 qmk flash -bl uf2-split-left
 # Plug the *right* half in, and then run:
@@ -148,6 +151,7 @@ A 47-100uF electrolytic or tantalum capacitor soldered across VCC and GND near e
 Install on **both** halves (either half can be the slave depending on which side USB is plugged into). Place the capacitor as close to the TRRS jack VCC/GND pads as possible to minimize trace resistance between the capacitor and the MCU's power input.
 
 References:
+
 * [RP2040 hardware design guide (power section)](https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf)
 * [QMK split keyboard firmware configuration](https://docs.qmk.fm/features/split_keyboard#firmware-configuration)
 * [QMK issue #18571 -- slave hangs at cold start with RP2040](https://github.com/qmk/qmk_firmware/issues/18571)
