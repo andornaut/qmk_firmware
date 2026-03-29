@@ -16,10 +16,8 @@
 // The Liatris exposes a USB VBUS sense pin (GP19), which allows QMK to detect
 // USB connectivity via a dedicated GPIO rather than the SPLIT_USB_DETECT
 // polling loop. This eliminates the ~2-second unresponsive window at boot and
-// improves reliability after KVM switches. However, the instant boot removes
-// the implicit grace period that SPLIT_USB_DETECT provides for the slave to
-// power up through TRRS, which can cause the slave to brownout on boot.
-// Uncomment to enable once a bulk capacitor is added near the slave's TRRS jack.
+// improves reliability after KVM switches. Requires a quality TRRS cable --
+// a marginal cable can cause intermittent serial failures and key drops.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define USB_VBUS_PIN GP19
 
@@ -38,14 +36,13 @@
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_CONNECTION_CHECK_TIMEOUT 100
 
-// Reboot the slave if it does not receive a ping from the master within
-// this timeout. With USB_VBUS_PIN, the slave enters slave mode instantly,
-// but the master may not have initialized serial yet. Without the watchdog,
-// a missed initial connection is permanent until manual reset.
+// SPLIT_WATCHDOG reboots the slave if it does not receive a ping from the
+// master within SPLIT_WATCHDOG_TIMEOUT ms. Not needed with USB_VBUS_PIN and
+// a quality TRRS cable. Previously caused periodic key drops during testing
+// with a marginal cable -- the watchdog reboot cycle compounded the problem.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-// See: https://github.com/qmk/qmk_firmware/issues/25362#issuecomment-3515018770
-#define SPLIT_WATCHDOG_ENABLE
-#define SPLIT_WATCHDOG_TIMEOUT 3000
+// #define SPLIT_WATCHDOG_ENABLE
+// #define SPLIT_WATCHDOG_TIMEOUT 3000
 
 // USB polling interval is set to 4ms in keyboard.json (usb.polling_interval).
 // Default is 1ms (1000 Hz). 4ms (250 Hz) adds up to 3ms of input latency but

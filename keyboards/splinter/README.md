@@ -135,11 +135,9 @@ sudo udevadm control --reload
 
 The Liatris exposes `USB_VBUS_PIN` (GP19), which allows QMK to detect USB connectivity via a dedicated GPIO pin. This eliminates the `SPLIT_USB_DETECT` polling loop that the v3 KB2040 required, removing the ~2-second unresponsive window at boot and improving reliability after KVM switches.
 
-However, the instant boot creates a power timing problem: the master starts polling for the slave immediately, but the slave's power arrives through the TRRS cable with a delay. If VCC hasn't stabilized before the slave's RP2040 attempts to boot, it can brownout and enter a reset loop. The symptom is the slave LED flashing once then going dark permanently until USB is re-plugged.
+`USB_VBUS_PIN` is enabled in `config.h`. A quality TRRS cable is critical -- a marginal cable causes intermittent serial failures and periodic key drops on the slave side. If you experience issues, try a different TRRS cable before changing firmware settings.
 
-`SPLIT_USB_DETECT` avoids this because the 2-second polling loop acts as an implicit grace period for the slave to power up. The tradeoff is a ~2-second unresponsive window on the slave at every boot.
-
-`USB_VBUS_PIN` is currently disabled in `config.h`. To re-enable it, add a bulk capacitor to stabilize slave power during boot (see below), then uncomment the define.
+`SPLIT_USB_DETECT` is the fallback if `USB_VBUS_PIN` is commented out. It adds a ~2-second unresponsive window at every boot while each half polls for USB.
 
 #### Capacitor fix for USB_VBUS_PIN brownout
 
@@ -157,7 +155,7 @@ References:
 
 #### Watchdog
 
-`SPLIT_WATCHDOG_ENABLE` reboots the slave if it does not receive a ping from the master within `SPLIT_WATCHDOG_TIMEOUT` ms. This recovers from startup timing failures where the slave boots into slave mode but the master hasn't initialized serial yet. It does not recover from brownout reset loops (the slave never gets far enough to start the watchdog).
+`SPLIT_WATCHDOG_ENABLE` reboots the slave if it does not receive a ping from the master within `SPLIT_WATCHDOG_TIMEOUT` ms. Currently disabled -- with `USB_VBUS_PIN` and a quality TRRS cable, the slave connects reliably without it. During testing, the watchdog compounded problems caused by a marginal TRRS cable (periodic reboot cycles causing key drops every few seconds).
 
 #### Connection throttling
 
@@ -167,7 +165,7 @@ Every scan cycle (~1000 Hz on RP2040), the master attempts serial communication 
 
 Setting | Value | Reason
 --- | --- | ---
-`USB_VBUS_PIN` | GP19 (disabled) | Liatris VBUS sense pin. Eliminates `SPLIT_USB_DETECT` but can cause slave brownout at boot without a bulk capacitor on the slave's TRRS VCC line.
-`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave if no ping from master within 3 seconds. Only relevant at startup; does not recover from brownouts or runtime disconnects.
+`USB_VBUS_PIN` | GP19 (enabled) | Liatris VBUS sense pin. Eliminates `SPLIT_USB_DETECT` polling loop. Requires a quality TRRS cable.
+`SPLIT_WATCHDOG_ENABLE` | disabled | Not needed with `USB_VBUS_PIN` and a quality TRRS cable. Can compound problems with marginal cables.
 `SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms -- any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
 `SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
