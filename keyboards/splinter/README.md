@@ -131,16 +131,43 @@ sudo udevadm control --reload
 
 ### Split keyboard reliability
 
+#### USB_VBUS_PIN vs SPLIT_USB_DETECT
+
 The Liatris exposes `USB_VBUS_PIN` (GP19), which allows QMK to detect USB connectivity via a dedicated GPIO pin. This eliminates the `SPLIT_USB_DETECT` polling loop that the v3 KB2040 required, removing the ~2-second unresponsive window at boot and improving reliability after KVM switches.
 
-Master/slave role assignment is now instant: the half connected to USB detects VBUS immediately and becomes master. The `SPLIT_WATCHDOG_ENABLE` and `SPLIT_WATCHDOG_TIMEOUT` settings are no longer needed.
+However, the instant boot creates a power timing problem: the master starts polling for the slave immediately, but the slave's power arrives through the TRRS cable with a delay. If VCC hasn't stabilized before the slave's RP2040 attempts to boot, it can brownout and enter a reset loop. The symptom is the slave LED flashing once then going dark permanently until USB is re-plugged.
 
-Runtime reliability still depends on master-side connection throttling. Every scan cycle (~1000 Hz on RP2040), the master attempts serial communication with the slave. After `SPLIT_MAX_CONNECTION_ERRORS` consecutive failures, the master throttles to one retry per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms — slave keypresses are dropped during this window.
+`SPLIT_USB_DETECT` avoids this because the 2-second polling loop acts as an implicit grace period for the slave to power up. The tradeoff is a ~2-second unresponsive window on the slave at every boot.
 
-The values in `config.h` address this:
+`USB_VBUS_PIN` is currently disabled in `config.h`. To re-enable it, add a bulk capacitor to stabilize slave power during boot (see below), then uncomment the define.
+
+#### Capacitor fix for USB_VBUS_PIN brownout
+
+When the master boots with `USB_VBUS_PIN`, it starts immediately and begins supplying power to the slave through the TRRS cable. The slave's RP2040 draws a burst of current during startup (LDO inrush, flash init, GPIO config). The TRRS cable's wire resistance causes a voltage drop proportional to this current draw, which can sag VCC below the RP2040's brownout threshold (~0.86V on the 1.1V core rail). The chip resets, draws inrush current again, and enters a brownout loop.
+
+A 47-100uF electrolytic or tantalum capacitor soldered across VCC and GND near each half's TRRS jack acts as a local energy reservoir. It absorbs the inrush current spike, preventing the voltage from sagging below the brownout threshold. Once the boot sequence completes, current draw stabilizes and the capacitor is no longer needed.
+
+Install on **both** halves (either half can be the slave depending on which side USB is plugged into). Place the capacitor as close to the TRRS jack VCC/GND pads as possible to minimize trace resistance between the capacitor and the MCU's power input.
+
+References:
+* [RP2040 hardware design guide (power section)](https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf)
+* [QMK split keyboard firmware configuration](https://docs.qmk.fm/features/split_keyboard#firmware-configuration)
+* [QMK issue #18571 -- slave hangs at cold start with RP2040](https://github.com/qmk/qmk_firmware/issues/18571)
+* [QMK issue #25362 -- RP2040 firmware fails to boot reliably](https://github.com/qmk/qmk_firmware/issues/25362)
+
+#### Watchdog
+
+`SPLIT_WATCHDOG_ENABLE` reboots the slave if it does not receive a ping from the master within `SPLIT_WATCHDOG_TIMEOUT` ms. This recovers from startup timing failures where the slave boots into slave mode but the master hasn't initialized serial yet. It does not recover from brownout reset loops (the slave never gets far enough to start the watchdog).
+
+#### Connection throttling
+
+Every scan cycle (~1000 Hz on RP2040), the master attempts serial communication with the slave. After `SPLIT_MAX_CONNECTION_ERRORS` consecutive failures, the master throttles to one retry per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms -- slave keypresses are dropped during this window.
+
+#### Settings
 
 Setting | Value | Reason
 --- | --- | ---
-`USB_VBUS_PIN` | GP19 | Liatris VBUS sense pin. Eliminates the `SPLIT_USB_DETECT` polling loop.
-`SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms — any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
+`USB_VBUS_PIN` | GP19 (disabled) | Liatris VBUS sense pin. Eliminates `SPLIT_USB_DETECT` but can cause slave brownout at boot without a bulk capacitor on the slave's TRRS VCC line.
+`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave if no ping from master within 3 seconds. Only relevant at startup; does not recover from brownouts or runtime disconnects.
+`SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms -- any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
 `SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.

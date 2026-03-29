@@ -16,9 +16,12 @@
 // The Liatris exposes a USB VBUS sense pin (GP19), which allows QMK to detect
 // USB connectivity via a dedicated GPIO rather than the SPLIT_USB_DETECT
 // polling loop. This eliminates the ~2-second unresponsive window at boot and
-// improves reliability after KVM switches.
+// improves reliability after KVM switches. However, the instant boot removes
+// the implicit grace period that SPLIT_USB_DETECT provides for the slave to
+// power up through TRRS, which can cause the slave to brownout on boot.
+// Uncomment to enable once a bulk capacitor is added near the slave's TRRS jack.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-#define USB_VBUS_PIN GP19
+// #define USB_VBUS_PIN GP19
 
 // Maximum number of failed communication attempts (one per scan cycle) before
 // master throttles connection attempts. Set to 0 to disable.
@@ -40,6 +43,7 @@
 // but the master may not have initialized serial yet. Without the watchdog,
 // a missed initial connection is permanent until manual reset.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+// See: https://github.com/qmk/qmk_firmware/issues/25362#issuecomment-3515018770
 #define SPLIT_WATCHDOG_ENABLE
 #define SPLIT_WATCHDOG_TIMEOUT 3000
 
