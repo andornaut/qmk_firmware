@@ -1,7 +1,7 @@
 {
     "bootloader": "rp2040",
     "debounce": 5,
-    "development_board": "kb2040",
+    "development_board": "liatris",
     "diode_direction": "COL2ROW",
     "features": {
         "bootmagic": true,
@@ -329,7 +329,7 @@
     "manufacturer": "JLCPCB",
     "matrix_pins": {
         "cols": ["GP0", "GP3", "GP4", "GP9", "GP8", "GP7", "NO_PIN"],
-        "rows": ["GP5", "GP18", "GP20", "GP19", "GP10"]
+        "rows": ["GP5", "GP22", "GP20", "GP23", "GP21"]
     },
     "processor": "RP2040",
     "split": {
@@ -337,7 +337,7 @@
         "matrix_pins": {
             "right": {
                 "cols": ["GP28", "GP3", "GP4", "GP5", "GP6", "GP7", "GP8"],
-                "rows": ["GP18", "GP10", "GP19", "GP20", "GP9"]
+                "rows": ["GP22", "GP21", "GP23", "GP20", "GP9"]
             }
         },
         "serial": {
@@ -350,7 +350,7 @@
     },
     "url": "https://github.com/andornaut/splinter-keyboard",
     "usb": {
-        "device_version": "3.0.0",
+        "device_version": "4.0.0",
         "pid": "0x0000",
         "polling_interval": 4,
         "vid": "0xFEED"

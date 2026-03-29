@@ -13,14 +13,12 @@
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET // Activates the double-tap behavior
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 500U // Timeout window in ms in which the double tap can occur.
 
-// The KB2040 has no USB_VBUS_PIN, so QMK automatically forces SPLIT_USB_DETECT
-// on for all ChibiOS/ARM boards (see platforms/chibios/chibios_config.h).
-// SPLIT_USB_DETECT uses a polling loop: each half polls for active USB
-// communication for up to SPLIT_USB_TIMEOUT ms at boot. The half that detects
-// USB becomes master; the other becomes slave. During this polling loop the
-// half is completely unresponsive. Keeping SPLIT_USB_TIMEOUT at the default
-// (2000ms) minimises the unresponsive window.
+// The Liatris exposes a USB VBUS sense pin (GP19), which allows QMK to detect
+// USB connectivity via a dedicated GPIO rather than the SPLIT_USB_DETECT
+// polling loop. This eliminates the ~2-second unresponsive window at boot and
+// improves reliability after KVM switches.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define USB_VBUS_PIN GP19
 
 // Maximum number of failed communication attempts (one per scan cycle) before
 // master throttles connection attempts. Set to 0 to disable.
@@ -36,15 +34,6 @@
 // Default: 500. 100ms gives faster recovery without flooding the scan loop.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_CONNECTION_CHECK_TIMEOUT 100
-
-// Enable watchdog on slave side to reboot if communication is lost.
-// The watchdog timer starts after split_post_init() (i.e. after the USB
-// polling loop), so it is independent of SPLIT_USB_TIMEOUT.
-// Default (when unset): 3000ms if SPLIT_USB_TIMEOUT is not defined, else
-//                       SPLIT_USB_TIMEOUT + 100ms (see split_util.c).
-// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-#define SPLIT_WATCHDOG_ENABLE
-#define SPLIT_WATCHDOG_TIMEOUT 3000
 
 // USB polling interval is set to 4ms in keyboard.json (usb.polling_interval).
 // Default is 1ms (1000 Hz). 4ms (250 Hz) adds up to 3ms of input latency but

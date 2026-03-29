@@ -6,15 +6,16 @@
 
 **Keyboard maintainer**: [andornaut](https://github.com/andornaut)
 
-**Hardware supported**: [Adafruit KB2040](https://www.adafruit.com/product/5302)
+**Hardware supported**: [splitkb Liatris](https://splitkb.com/products/liatris)
 
 ## Versions
 
 Version | Description | Firmware | Layout
 --- | --- | --- | ---
-[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [branch/splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
-[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. Symmetrical enclosures. Non-traditional placement of backspace and backslash keys. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
-[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
+[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62-keys. Liatris MCU with USB VBUS detection. | [branch/splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | TBD
+[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. KB2040 MCU. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-v3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
+[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. ATmega32U4 MCU. Symmetrical enclosures. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
+[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. ATmega32U4 MCU. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
 
 ## Flashing
 
@@ -30,7 +31,7 @@ Both halves run their own copy of the firmware independently — there is no way
 
 ### Boot button
 
-This enters the RP2040's native UF2 bootloader. Refer to the [KB2040 pinouts](https://learn.adafruit.com/adafruit-kb2040/pinouts) documentation.
+This enters the RP2040's native UF2 bootloader. Refer to the [Liatris pinout](https://docs.splitkb.com/product-guides/liatris/pinout) documentation.
 
 Either:
 
@@ -118,37 +119,28 @@ To disable the console (saves firmware size and a small amount of scan-cycle ove
 ```bash
 sudo dmesg --follow
 # Connect device via USB and look for a line like:
-# [671276.248574] usb 1-1: New USB device found, idVendor=2e8a, idProduct=8105, bcdDevice= 1.00
+# [671276.248574] usb 1-1: New USB device found, idVendor=feed, idProduct=0000, bcdDevice= 4.00
 # Note the idVendor and idProduct values
 
 sudo vim /etc/udev/rules.d/50-qmk.rules
 # Add a line like:
-# SUBSYSTEMS=="usb", ATTRS{idVendor}=="2e8a", ATTRS{idProduct}=="8105", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="feed", ATTRS{idProduct}=="0000", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
 
 sudo udevadm control --reload
 ```
 
 ### Split keyboard reliability
 
-The KB2040 has no hardware USB VBUS sense pin, so QMK automatically forces [`SPLIT_USB_DETECT`](https://docs.qmk.fm/features/split_keyboard#firmware-configuration) on for all ChibiOS/ARM boards that lack `USB_VBUS_PIN` (see `platforms/chibios/chibios_config.h`). This cannot be disabled without a PCB hardware modification.
+The Liatris exposes `USB_VBUS_PIN` (GP19), which allows QMK to detect USB connectivity via a dedicated GPIO pin. This eliminates the `SPLIT_USB_DETECT` polling loop that the v3 KB2040 required, removing the ~2-second unresponsive window at boot and improving reliability after KVM switches.
 
-`SPLIT_USB_DETECT` determines master/slave roles by a software timing race: at boot, each half polls for active USB communication for up to `SPLIT_USB_TIMEOUT` milliseconds. The half that detects USB becomes master; the other becomes slave. **During this polling loop the half is completely unresponsive.** If neither half detects USB within the timeout, both declare themselves slaves, and the keyboard does not function until `SPLIT_WATCHDOG_ENABLE` triggers a reboot and they retry.
+Master/slave role assignment is now instant: the half connected to USB detects VBUS immediately and becomes master. The `SPLIT_WATCHDOG_ENABLE` and `SPLIT_WATCHDOG_TIMEOUT` settings are no longer needed.
 
-The watchdog timer starts after `split_post_init()` — i.e. after the USB polling loop finishes — so `SPLIT_WATCHDOG_TIMEOUT` is independent of `SPLIT_USB_TIMEOUT`. The watchdog is only relevant at startup: once the slave receives its first ping from the master, it is permanently satisfied and does not recover from runtime disconnects. Runtime recovery depends on master-side connection throttling (`SPLIT_MAX_CONNECTION_ERRORS` / `SPLIT_CONNECTION_CHECK_TIMEOUT`).
-
-Known failure modes and symptoms:
-
-* Plugging USB into one half sometimes works, sometimes doesn't — USB enumeration took longer than `SPLIT_USB_TIMEOUT`
-* One half appears dead at startup — that half lost the USB detection race; `SPLIT_WATCHDOG_ENABLE` reboots it so it can retry. Increasing `SPLIT_USB_TIMEOUT` makes this worse by extending the unresponsive polling window per reboot cycle.
-* Slave keypresses intermittently drop — a brief TRRS glitch caused `SPLIT_MAX_CONNECTION_ERRORS` to be reached, triggering master-side throttling. The RP2040 scan cycle is ~1000 Hz, so the default of 10 errors accumulates in ~10ms.
-* After switching KVM inputs, the keyboard takes several seconds to respond — USB re-enumeration on the master side triggers re-detection; recovery time depends on `SPLIT_USB_TIMEOUT` + watchdog cycle. Keeping `SPLIT_USB_TIMEOUT` low helps but cannot eliminate the delay
-* Setting `SPLIT_CONNECTION_CHECK_TIMEOUT 0` floods the scan loop with serial timeouts and causes keypresses to be dropped
+Runtime reliability still depends on master-side connection throttling. Every scan cycle (~1000 Hz on RP2040), the master attempts serial communication with the slave. After `SPLIT_MAX_CONNECTION_ERRORS` consecutive failures, the master throttles to one retry per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms — slave keypresses are dropped during this window.
 
 The values in `config.h` address this:
 
 Setting | Value | Reason
 --- | --- | ---
-`SPLIT_USB_TIMEOUT` | 2000ms (default) | Kept at default to minimise the unresponsive window per reboot. Increasing it makes the "one half dead" symptom worse because the slave spends more time in the polling loop each reboot cycle.
-`SPLIT_WATCHDOG_TIMEOUT` | 3000ms | Reboots the slave quickly if it never receives a first ping from the master after boot. Once the first ping is received the watchdog is permanently satisfied and plays no further role.
+`USB_VBUS_PIN` | GP19 | Liatris VBUS sense pin. Eliminates the `SPLIT_USB_DETECT` polling loop.
 `SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms — any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
 `SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
