@@ -10,12 +10,12 @@
 
 ## Versions
 
-Version | Description | Firmware | Layout
---- | --- | --- | ---
-[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62-keys. [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) MCU with USB VBUS detection. | [branch/splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | TBD
-[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62-keys. [Adafruit KB2040](https://www.adafruit.com/product/5302) (RP2040) MCU. | [tags/splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-v3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
-[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62-keys. [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) MCU. Symmetrical enclosures. | [tags/splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
-[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61-keys. [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) MCU. Asymmetrical enclosures. Traditional layout. | [tags/splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
+Version | Keys | MCU | Features | Firmware | Photo
+--- | --- | --- | --- | --- | ---
+[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62 | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) | Symmetrical enclosures, USB VBUS detection | [splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | |
+[v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62 | [Adafruit KB2040](https://www.adafruit.com/product/5302) (RP2040) | Symmetrical enclosures | [splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-v3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
+[v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Symmetrical enclosures | [splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
+[v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Asymmetrical enclosures, traditional layout | [splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
 
 ## Flashing
 
