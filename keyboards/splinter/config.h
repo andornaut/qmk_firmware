@@ -35,6 +35,13 @@
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_CONNECTION_CHECK_TIMEOUT 100
 
+// Enable watchdog on slave side to reboot if communication is lost.
+// The watchdog timer starts after split_post_init() (i.e. after the USB
+// polling loop), so it is independent of SPLIT_USB_TIMEOUT.
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define SPLIT_WATCHDOG_ENABLE
+#define SPLIT_WATCHDOG_TIMEOUT 3000
+
 // USB polling interval is set to 4ms in keyboard.json (usb.polling_interval).
 // Default is 1ms (1000 Hz). 4ms (250 Hz) adds up to 3ms of input latency but
 // reduces USB overhead. Set to 1 for lowest latency.
