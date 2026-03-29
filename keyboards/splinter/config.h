@@ -21,7 +21,7 @@
 // power up through TRRS, which can cause the slave to brownout on boot.
 // Uncomment to enable once a bulk capacitor is added near the slave's TRRS jack.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-// #define USB_VBUS_PIN GP19
+#define USB_VBUS_PIN GP19
 
 // Maximum number of failed communication attempts (one per scan cycle) before
 // master throttles connection attempts. Set to 0 to disable.
