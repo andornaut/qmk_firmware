@@ -35,6 +35,14 @@
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_CONNECTION_CHECK_TIMEOUT 100
 
+// Reboot the slave if it does not receive a ping from the master within
+// this timeout. With USB_VBUS_PIN, the slave enters slave mode instantly,
+// but the master may not have initialized serial yet. Without the watchdog,
+// a missed initial connection is permanent until manual reset.
+// Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
+#define SPLIT_WATCHDOG_ENABLE
+#define SPLIT_WATCHDOG_TIMEOUT 3000
+
 // USB polling interval is set to 4ms in keyboard.json (usb.polling_interval).
 // Default is 1ms (1000 Hz). 4ms (250 Hz) adds up to 3ms of input latency but
 // reduces USB overhead. Set to 1 for lowest latency.
