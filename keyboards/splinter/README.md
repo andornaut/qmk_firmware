@@ -88,9 +88,10 @@ qmk compile
 ### References
 
 * [Config options](https://docs.qmk.fm/config_options)
-* [Keycodes](https://docs.qmk.fm/keycodes)
 * [keyboard.json schema](https://github.com/qmk/qmk_firmware/blob/master/data/schemas/keyboard.jsonschema)
+* [Keycodes](https://docs.qmk.fm/keycodes)
 * [QMK CLI](https://docs.qmk.fm/cli)
+* [QMK Configurator](https://config.qmk.fm/#/test)
 * [RP2040 platform](https://docs.qmk.fm/platformdev_rp2040)
 * [Serial driver](https://docs.qmk.fm/drivers/serial)
 * [Setting up your QMK environment](https://docs.qmk.fm/newbs_getting_started)
