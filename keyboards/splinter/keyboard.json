@@ -342,7 +342,7 @@
         },
         "serial": {
             "driver": "vendor",
-            "pin": "GP2"
+            "pin": "GP1"
         },
         "transport": {
             "protocol": "serial"

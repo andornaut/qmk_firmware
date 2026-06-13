@@ -149,7 +149,7 @@ When the master boots with `USB_VBUS_PIN`, it starts immediately and begins supp
 
 A 47-100uF electrolytic or tantalum capacitor soldered across VCC and GND near each half's TRRS jack acts as a local energy reservoir. It absorbs the inrush current spike, preventing the voltage from sagging below the brownout threshold. Once the boot sequence completes, current draw stabilizes and the capacitor is no longer needed.
 
-Install on **both** halves (either half can be the slave depending on which side USB is plugged into). Place the capacitor as close to the TRRS jack VCC/GND pads as possible to minimize trace resistance between the capacitor and the MCU's power input.
+Install on **both** halves (either half can be the slave depending on which side USB is plugged into). Place the capacitor as close to the TRRS jack VCC/GND pads as possible to minimize trace resistance between the capacitor and the MCU's power input. On v4 the TRRS pinout is VCC on the tip and GND on the sleeve (data is on ring R2) -- so the capacitor goes across the tip and sleeve pads.
 
 References:
 
@@ -157,6 +157,15 @@ References:
 * [QMK split keyboard firmware configuration](https://docs.qmk.fm/features/split_keyboard#firmware-configuration)
 * [QMK issue #18571 -- slave hangs at cold start with RP2040](https://github.com/qmk/qmk_firmware/issues/18571)
 * [QMK issue #25362 -- RP2040 firmware fails to boot reliably](https://github.com/qmk/qmk_firmware/issues/25362)
+
+#### Data-line hot-unplug protection (v4 hardware)
+
+Hot-unplugging the TRRS cable while powered can drive a transient into the MCU's serial GPIO and kill the pin (this happened to a v4 board). The v4 PCB hardens the data line in hardware:
+
+* A bidirectional TVS (clamps to GND) plus a 100Ω series resistor sit between the TRRS jack and the MCU, absorbing and current-limiting transients.
+* The connector is wired GND on the sleeve, serial data on ring R2, VCC on the tip. The sleeve is the last contact to break on withdrawal, so the two halves keep a common ground / return path through the disconnect, and the data line sits on an interior ring rather than the exposed, wiping tip.
+
+This is purely a hardware change -- the serial data still terminates on the same MCU pin, so no firmware or `split.serial` change is required. Details live in the hardware repo's `AGENTS.md`.
 
 #### Watchdog
 
