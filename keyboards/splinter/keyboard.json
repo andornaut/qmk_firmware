@@ -328,7 +328,7 @@
     "maintainer": "andornaut",
     "manufacturer": "JLCPCB",
     "matrix_pins": {
-        "cols": ["GP0", "GP3", "GP4", "GP9", "GP8", "GP7", "NO_PIN"],
+        "cols": ["GP2", "GP3", "GP9", "GP8", "GP7", "GP6", "NO_PIN"],
         "rows": ["GP5", "GP22", "GP20", "GP23", "GP21"]
     },
     "processor": "RP2040",
