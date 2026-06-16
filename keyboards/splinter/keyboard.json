@@ -1,6 +1,5 @@
 {
     "bootloader": "rp2040",
-    "debounce": 5,
     "development_board": "liatris",
     "diode_direction": "COL2ROW",
     "features": {
