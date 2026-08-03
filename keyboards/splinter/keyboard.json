@@ -326,8 +326,8 @@
     "maintainer": "andornaut",
     "manufacturer": "JLCPCB",
     "matrix_pins": {
-        "cols": ["GP27", "GP26", "GP22", "GP20", "GP23", "GP6", "NO_PIN"],
-        "rows": ["GP5", "GP9", "GP8", "GP7", "GP21"]
+        "cols": ["GP4", "GP5", "GP6", "GP7", "GP8", "GP22", "NO_PIN"],
+        "rows": ["GP26", "GP21", "GP23", "GP20", "GP9"]
     },
     "processor": "RP2040",
     "split": {
@@ -340,7 +340,7 @@
         },
         "serial": {
             "driver": "vendor",
-            "pin": "GP29"
+            "pin": "GP2"
         },
         "transport": {
             "protocol": "serial"
