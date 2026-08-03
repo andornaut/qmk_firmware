@@ -4,7 +4,6 @@
     "diode_direction": "COL2ROW",
     "features": {
         "bootmagic": true,
-        "console": true,
         "nkro": true
     },
     "keyboard_name": "splinter",
@@ -327,8 +326,8 @@
     "maintainer": "andornaut",
     "manufacturer": "JLCPCB",
     "matrix_pins": {
-        "cols": ["GP4", "GP5", "GP6", "GP7", "GP8", "GP22", "NO_PIN"],
-        "rows": ["GP26", "GP21", "GP23", "GP20", "GP9"]
+        "cols": ["GP27", "GP26", "GP22", "GP20", "GP23", "GP6", "NO_PIN"],
+        "rows": ["GP5", "GP9", "GP8", "GP7", "GP21"]
     },
     "processor": "RP2040",
     "split": {
@@ -341,7 +340,7 @@
         },
         "serial": {
             "driver": "vendor",
-            "pin": "GP2"
+            "pin": "GP29"
         },
         "transport": {
             "protocol": "serial"
@@ -350,7 +349,7 @@
     "url": "https://github.com/andornaut/splinter-keyboard",
     "usb": {
         "device_version": "4.0.0",
-        "pid": "0x0000",
+        "pid": "0x5350",
         "polling_interval": 4,
         "vid": "0xFEED"
     }
