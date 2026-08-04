@@ -101,8 +101,19 @@ qmk compile
 
 ### Debug console
 
-The `console` feature is enabled in `keyboard.json`, and `process_record_user` in `keymap.c` logs key events when the console is active. To read the debug output:
+The `console` feature is disabled by default (it adds firmware size and a small scan-cycle cost, and the matrix is verified). To turn it back on for debugging:
 
+1. Set `"console": true` in `keyboard.json`
+1. Add a `process_record_user` to `keymap.c` that logs key events:
+
+   ```c
+   bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+   #ifdef CONSOLE_ENABLE
+       uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed);
+   #endif
+       return true;
+   }
+   ```
 1. Build and flash the firmware: `qmk flash`
 1. Run `qmk console` to connect to the keyboard's HID console and view key event logs
 
@@ -116,19 +127,17 @@ void keyboard_post_init_user(void) {
 }
 ```
 
-To disable the console (saves firmware size and a small amount of scan-cycle overhead), set `"console": false` in `keyboard.json` and reflash.
-
 ### Configure udev rules
 
 ```bash
 sudo dmesg --follow
 # Connect device via USB and look for a line like:
-# [671276.248574] usb 1-1: New USB device found, idVendor=feed, idProduct=0000, bcdDevice= 4.00
+# [671276.248574] usb 1-1: New USB device found, idVendor=feed, idProduct=5350, bcdDevice= 4.00
 # Note the idVendor and idProduct values
 
 sudo vim /etc/udev/rules.d/50-qmk.rules
 # Add a line like:
-# SUBSYSTEMS=="usb", ATTRS{idVendor}=="feed", ATTRS{idProduct}=="0000", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
+# SUBSYSTEMS=="usb", ATTRS{idVendor}=="feed", ATTRS{idProduct}=="5350", TAG+="uaccess", ENV{ID_MM_DEVICE_IGNORE}="1"
 
 sudo udevadm control --reload
 ```
