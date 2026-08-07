@@ -24,13 +24,13 @@
 // Maximum number of failed communication attempts (one per scan cycle) before
 // master throttles connection attempts. Set to 0 to disable.
 // Default: 10. The RP2040 scan cycle runs at ~1000 Hz, so 10 errors accumulate
-// in ~10ms — any brief TRRS glitch causes 100ms of dropped slave keypresses.
+// in ~10ms, so any brief TRRS glitch causes 100ms of dropped slave keypresses.
 // 50 errors = ~50ms of consecutive failures tolerated before throttling.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define SPLIT_MAX_CONNECTION_ERRORS 50
 
 // How long (ms) master blocks connection attempts after flagging slave as disconnected.
-// One attempt is allowed each time this interval elapses. Do not set to 0 —
+// One attempt is allowed each time this interval elapses. Do not set to 0:
 // that floods the scan loop with serial timeouts and drops keypresses.
 // Default: 500. 100ms gives faster recovery without flooding the scan loop.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration

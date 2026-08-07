@@ -12,14 +12,14 @@
 
 Version | Keys | MCU | Features | Firmware | Photo
 --- | --- | --- | --- | --- | ---
-[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62 | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) | Symmetrical enclosures, USB VBUS detection | [splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | [![v4](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v4/v4-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v4/v4.jpg)
+[v4](https://github.com/andornaut/splinter-keyboard/tree/main/v4) | 62 | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) | Symmetrical enclosures, USB VBUS detection | [splinter](https://github.com/andornaut/qmk_firmware/tree/splinter/keyboards/splinter) | Pending
 [v3](https://github.com/andornaut/splinter-keyboard/tree/main/v3) | 62 | [Adafruit KB2040](https://www.adafruit.com/product/5302) (RP2040) | Symmetrical enclosures | [splinter-v3.0](https://github.com/andornaut/qmk_firmware/tree/splinter-v3.0/keyboards/splinter) | [![v3](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v3/v3.jpg)
 [v2](https://github.com/andornaut/splinter-keyboard/tree/main/v2) | 62 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Symmetrical enclosures | [splinter-v2.0](https://github.com/andornaut/qmk_firmware/tree/splinter-2.0/keyboards/splinter) | [![v2](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v2/v2-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v2/v2.jpg)
 [v1](https://github.com/andornaut/splinter-keyboard/tree/main/v1) | 61 | [SparkFun Pro Micro](https://www.sparkfun.com/products/15795) (ATmega32U4) | Asymmetrical enclosures, traditional layout | [splinter-v1.0](https://github.com/andornaut/qmk_firmware/tree/splinter-1.0/keyboards/splinter) | [![v1](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v1/v1-300width.jpg)](https://github.com/andornaut/splinter-keyboard/blob/main/v1/v1.jpg)
 
 ## Flashing
 
-Both halves run their own copy of the firmware independently — there is no way to update one half over the TRRS link. Flash each half separately using the same steps:
+Both halves run their own copy of the firmware independently: there is no way to update one half over the TRRS link. Flash each half separately using the same steps:
 
 1. Run `make splinter:flash`
 1. Enter bootloader mode using one of the methods below ("Boot button" vs "Reset button")
@@ -50,7 +50,7 @@ This uses QMK's [double-tap reset](https://docs.qmk.fm/platformdev_rp2040#double
 
 1. Press the reset button on the microcontroller or PCB *twice* in quick succession
 
-Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive — see step 3 above for alternatives to run the mount command.
+Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive; see step 3 above for alternatives to run the mount command.
 
 ### First-time EEPROM handedness setup
 
@@ -152,21 +152,6 @@ The Liatris exposes `USB_VBUS_PIN` (GP19), which allows QMK to detect USB connec
 
 `SPLIT_USB_DETECT` is the fallback if `USB_VBUS_PIN` is commented out. It adds a ~2-second unresponsive window at every boot while each half polls for USB.
 
-#### Capacitor fix for USB_VBUS_PIN brownout
-
-When the master boots with `USB_VBUS_PIN`, it starts immediately and begins supplying power to the slave through the TRRS cable. The slave's RP2040 draws a burst of current during startup (LDO inrush, flash init, GPIO config). The TRRS cable's wire resistance causes a voltage drop proportional to this current draw, which can sag VCC below the RP2040's brownout threshold (~0.86V on the 1.1V core rail). The chip resets, draws inrush current again, and enters a brownout loop.
-
-A 47-100uF electrolytic or tantalum capacitor soldered across VCC and GND near each half's TRRS jack acts as a local energy reservoir. It absorbs the inrush current spike, preventing the voltage from sagging below the brownout threshold. Once the boot sequence completes, current draw stabilizes and the capacitor is no longer needed.
-
-Install on **both** halves (either half can be the slave depending on which side USB is plugged into). Place the capacitor as close to the TRRS jack VCC/GND pads as possible to minimize trace resistance between the capacitor and the MCU's power input. On v4 the TRRS pinout is VCC on the tip and GND on the sleeve (data is on ring R2) -- so the capacitor goes across the tip and sleeve pads.
-
-References:
-
-* [RP2040 hardware design guide (power section)](https://datasheets.raspberrypi.com/rp2040/hardware-design-with-rp2040.pdf)
-* [QMK split keyboard firmware configuration](https://docs.qmk.fm/features/split_keyboard#firmware-configuration)
-* [QMK issue #18571 -- slave hangs at cold start with RP2040](https://github.com/qmk/qmk_firmware/issues/18571)
-* [QMK issue #25362 -- RP2040 firmware fails to boot reliably](https://github.com/qmk/qmk_firmware/issues/25362)
-
 #### Data-line hot-unplug protection (v4 hardware)
 
 Hot-unplugging the TRRS cable while powered can drive a transient into the MCU's serial GPIO and kill the pin (this happened to a v4 board). The v4 PCB hardens the data line in hardware:
@@ -174,7 +159,7 @@ Hot-unplugging the TRRS cable while powered can drive a transient into the MCU's
 * A bidirectional TVS (clamps to GND) plus a 100Ω series resistor sit between the TRRS jack and the MCU, absorbing and current-limiting transients.
 * The connector is wired GND on the sleeve, serial data on ring R2, VCC on the tip. The sleeve is the last contact to break on withdrawal, so the two halves keep a common ground / return path through the disconnect, and the data line sits on an interior ring rather than the exposed, wiping tip.
 
-This is purely a hardware change -- the serial data still terminates on the same MCU pin, so no firmware or `split.serial` change is required. Details live in the hardware repo's `AGENTS.md`.
+This is purely a hardware change -- the serial data still terminates on the same MCU pin, so no firmware or `split.serial` change is required. Details live in the hardware repo's [v4 notes](https://github.com/andornaut/splinter-keyboard/blob/main/v4/README.md#trrs-data-line-protection).
 
 #### Watchdog
 
