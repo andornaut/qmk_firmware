@@ -18,23 +18,28 @@
 // polling loop. This eliminates the ~2-second unresponsive window at boot and
 // improves reliability after KVM switches. Requires a quality TRRS cable --
 // a marginal cable can cause intermittent serial failures and key drops.
+// With each module's VCC jumper at 3.6V, the half powered over the TRRS cable
+// still reads GP19 low and runs as the secondary.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 #define USB_VBUS_PIN GP19
 
-// Maximum number of failed communication attempts (one per scan cycle) before
-// master throttles connection attempts. Set to 0 to disable.
-// Default: 10. The RP2040 scan cycle runs at ~1000 Hz, so 10 errors accumulate
-// in ~10ms, so any brief TRRS glitch causes 100ms of dropped slave keypresses.
-// 50 errors = ~50ms of consecutive failures tolerated before throttling.
+// Maximum number of failed communication attempts before the master throttles
+// connection attempts. Set to 0 to disable. Each counted failure is one scan's
+// transaction, retried up to 10 times with a 20ms (SERIAL_USART_TIMEOUT) handshake
+// wait each, so with the other half absent one failure costs about 200ms of scan
+// time. A brief glitch on a connected link is absorbed by those retries within one
+// scan and never reaches this count. 10 (the QMK default) throttles a lone half
+// after about 2s.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-#define SPLIT_MAX_CONNECTION_ERRORS 50
+#define SPLIT_MAX_CONNECTION_ERRORS 10
 
-// How long (ms) master blocks connection attempts after flagging slave as disconnected.
-// One attempt is allowed each time this interval elapses. Do not set to 0:
-// that floods the scan loop with serial timeouts and drops keypresses.
-// Default: 500. 100ms gives faster recovery without flooding the scan loop.
+// How long (ms) the master blocks connection attempts after flagging the slave as
+// disconnected; one attempt is allowed each time this interval elapses. Each
+// attempt can stall the scan for the 20ms handshake timeout, so 500 (the QMK
+// default) costs a lone half about 4% of its scan time. Do not set to 0: that
+// floods the scan loop with serial timeouts and drops keypresses.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
-#define SPLIT_CONNECTION_CHECK_TIMEOUT 100
+#define SPLIT_CONNECTION_CHECK_TIMEOUT 500
 
 // SPLIT_WATCHDOG reboots the slave if it does not receive a ping from the
 // master within SPLIT_WATCHDOG_TIMEOUT ms. Not needed with USB_VBUS_PIN and

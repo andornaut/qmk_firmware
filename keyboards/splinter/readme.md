@@ -52,9 +52,9 @@ This uses QMK's [double-tap reset](https://docs.qmk.fm/platformdev_rp2040#double
 
 Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive; see step 3 above for alternatives to run the mount command.
 
-### First-time EEPROM handedness setup
+### Flashing and handedness
 
-The split halves use `EE_HANDS` to determine handedness. This must be set once per microcontroller.
+The split halves use `EE_HANDS` to determine handedness. Always flash each half with its handedness target: those builds rewrite the stored side on every boot, so an EEPROM reset cannot leave a half on the wrong side.
 
 ```bash
 # Mount the MCU's storage
@@ -64,9 +64,6 @@ udisksctl mount -b /dev/disk/by-label/RPI-RP2
 qmk flash -bl uf2-split-left
 # Plug the *right* half in, and then run:
 qmk flash -bl uf2-split-right
-
-# Thereafter
-qmk flash
 ```
 
 ## Developing
@@ -114,7 +111,7 @@ The `console` feature is disabled by default (it adds firmware size and a small 
        return true;
    }
    ```
-1. Build and flash the firmware: `qmk flash`
+1. Build and flash the firmware to each half: `qmk flash -bl uf2-split-left` or `qmk flash -bl uf2-split-right`
 1. Run `qmk console` to connect to the keyboard's HID console and view key event logs
 
 To enable additional QMK debug output (matrix scanning, split transport, etc.), add the following to `keymap.c` in `keyboard_post_init_user`:
@@ -152,14 +149,21 @@ The Liatris exposes `USB_VBUS_PIN` (GP19), which allows QMK to detect USB connec
 
 `SPLIT_USB_DETECT` is the fallback if `USB_VBUS_PIN` is commented out. It adds a ~2-second unresponsive window at every boot while each half polls for USB.
 
-#### Data-line hot-unplug protection (v4 hardware)
+#### Split connection (v4 hardware)
 
-Hot-unplugging the TRRS cable while powered can drive a transient into the MCU's serial GPIO and kill the pin (this happened to a v4 board). The v4 PCB hardens the data line in hardware:
+Plug contact | Net | Liatris pin
+-------------|-----|------------
+Tip | VCC | VCC
+Ring 1 | - | -
+Ring 2 | P2 | GP2
+Sleeve | GND | GND
 
-* A bidirectional TVS (clamps to GND) plus a 100Ω series resistor sit between the TRRS jack and the MCU, absorbing and current-limiting transients.
-* The connector is wired GND on the sleeve, serial data on ring R2, VCC on the tip. The sleeve is the last contact to break on withdrawal, so the two halves keep a common ground / return path through the disconnect, and the data line sits on an interior ring rather than the exposed, wiping tip.
+* `split.serial.pin` is GP2 on both halves, half duplex through the vendor (PIO) driver. Nothing may go in series with the line: the receiving half drives it high while the sender pulls it low, so series resistance raises the low the receiver reads.
+* Set each Liatris VCC jumper to 3.6V. The VCC pin carries USB voltage (about 5V) by default, and the half with USB powers the other through it.
+* Never plug or unplug the TRRS cable while either half has USB.
+* Flash each half with `-bl uf2-split-left` or `-bl uf2-split-right`. Those builds rewrite the stored handedness on every boot, so a bootmagic EEPROM reset (holding the top-left key while plugging in) cannot leave a half on the wrong side.
 
-This is purely a hardware change -- the serial data still terminates on the same MCU pin, so no firmware or `split.serial` change is required. Details live in the hardware repo's [v4 notes](https://github.com/andornaut/splinter-keyboard/blob/main/v4/README.md#trrs-data-line-protection).
+Rationale and the protection parts: the hardware repo's [split connection notes](https://github.com/andornaut/splinter-keyboard/blob/main/v4/README.md#split-connection-trrs).
 
 #### Watchdog
 
