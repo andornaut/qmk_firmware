@@ -6,7 +6,8 @@
 
 // This method sets the keyboard's handedness by setting a flag in the persistent storage (EEPROM).
 // This is checked when the controller first starts up, and determines what half the keyboard is, and how to orient the keyboard layout.
-// Must flash the left side at least once using: qmk flash -bl uf2-split-left
+// Flash each half with its handedness target (qmk flash -bl uf2-split-left / uf2-split-right),
+// which rewrites the stored side on every boot.
 #define EE_HANDS
 
 // https://docs.qmk.fm/platformdev_rp2040#double-tap

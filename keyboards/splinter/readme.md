@@ -21,7 +21,7 @@ Version | Keys | MCU | Features | Firmware | Photo
 
 Both halves run their own copy of the firmware independently: there is no way to update one half over the TRRS link. Flash each half separately using the same steps:
 
-1. Run `make splinter:flash`
+1. Run `qmk flash -kb splinter -km default -bl uf2-split-left` for the left half, or `-bl uf2-split-right` for the right (see [Flashing and handedness](#flashing-and-handedness))
 1. Enter bootloader mode using one of the methods below ("Boot button" vs "Reset button")
 1. Run `udisksctl mount -b /dev/disk/by-label/RPI-RP2` to mount the RP2040's flash storage to `/media/${USER}/RPI-RP2/`
    * QMK will automatically flash the new firmware then unmount `/media/${USER}/RPI-RP2/`
@@ -48,7 +48,7 @@ Or, if already plugged in:
 
 This uses QMK's [double-tap reset](https://docs.qmk.fm/platformdev_rp2040#double-tap) feature, which is enabled via `RP2040_BOOTLOADER_DOUBLE_TAP_RESET` in `config.h`. It only works after the QMK firmware has been flashed at least once using the boot button method.
 
-1. Press the reset button on the microcontroller or PCB *twice* in quick succession
+1. Press the board's reset switch *twice* in quick succession (the Liatris itself has no reset button, only Boot)
 
 Note: after double-tapping reset, the keyboard enters bootloader mode and becomes unresponsive; see step 3 above for alternatives to run the mount command.
 
@@ -73,7 +73,7 @@ python -m venv .venv
 source .venv/bin/activate
 python3 -m pip install qmk
 
-qmk setup -H qmk_firmware
+qmk setup andornaut/qmk_firmware -b splinter -H qmk_firmware
 qmk config \
     compile.keyboard=splinter \
     compile.keymap=default \
@@ -171,7 +171,7 @@ Rationale and the protection parts: the hardware repo's [split connection notes]
 
 #### Connection throttling
 
-Every scan cycle (~1000 Hz on RP2040), the master attempts serial communication with the slave. After `SPLIT_MAX_CONNECTION_ERRORS` consecutive failures, the master throttles to one retry per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms -- slave keypresses are dropped during this window.
+Every scan, the master runs its serial transactions with the slave, retrying a failed one up to 10 times with a 20ms handshake timeout each. After `SPLIT_MAX_CONNECTION_ERRORS` failed scans, the master throttles to one attempt per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms, and slave keypresses are dropped during that window.
 
 #### Settings
 
@@ -179,5 +179,5 @@ Setting | Value | Reason
 --- | --- | ---
 `USB_VBUS_PIN` | GP19 (enabled) | [splitkb Liatris](https://splitkb.com/products/liatris) (RP2040) VBUS sense pin. Not available on the [Adafruit KB2040](https://www.adafruit.com/product/5302) (RP2040). Eliminates `SPLIT_USB_DETECT` polling loop.
 `SPLIT_WATCHDOG_ENABLE` | disabled | Not needed with `USB_VBUS_PIN`.
-`SPLIT_MAX_CONNECTION_ERRORS` | 50 | The RP2040 scan cycle runs at ~1000 Hz, so the default of 10 errors accumulates in ~10ms -- any brief TRRS glitch causes throttling. 50 errors tolerates ~50ms of consecutive failures before the master backs off.
-`SPLIT_CONNECTION_CHECK_TIMEOUT` | 100ms | How long the master waits between reconnection attempts after flagging the slave as disconnected. 100ms gives fast recovery without flooding the scan loop. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
+`SPLIT_MAX_CONNECTION_ERRORS` | 10 (QMK default) | With the other half absent each failed scan costs about 200ms, so 10 throttles a lone half after about 2s. A brief glitch on a connected link is absorbed by the per-transaction retries and never reaches this count.
+`SPLIT_CONNECTION_CHECK_TIMEOUT` | 500ms (QMK default) | How long the master waits between reconnection attempts after flagging the slave as disconnected. Each attempt can stall the scan for the 20ms handshake timeout, so 500 costs a lone half about 4% of its scan time. Setting this to 0 floods the scan loop with serial timeouts and drops keypresses.
