@@ -26,7 +26,7 @@
 
 // Maximum number of failed communication attempts before the master throttles
 // connection attempts. Set to 0 to disable. Each counted failure is one scan's
-// transaction, retried up to 10 times with a 20ms (SERIAL_USART_TIMEOUT) handshake
+// transaction, attempted up to 10 times with a 20ms (SERIAL_USART_TIMEOUT) handshake
 // wait each, so with the other half absent one failure costs about 200ms of scan
 // time. A brief glitch on a connected link is absorbed by those retries within one
 // scan and never reaches this count. 10 (the QMK default) throttles a lone half
@@ -44,8 +44,8 @@
 
 // SPLIT_WATCHDOG reboots the slave if it does not receive a ping from the
 // master within SPLIT_WATCHDOG_TIMEOUT ms. Not needed with USB_VBUS_PIN and
-// a quality TRRS cable. Previously caused periodic key drops during testing
-// with a marginal cable -- the watchdog reboot cycle compounded the problem.
+// a quality TRRS cable. With a marginal cable it reboots the slave on dropped
+// pings, and the reboots themselves drop keys.
 // Docs: https://docs.qmk.fm/features/split_keyboard#firmware-configuration
 // #define SPLIT_WATCHDOG_ENABLE
 // #define SPLIT_WATCHDOG_TIMEOUT 3000

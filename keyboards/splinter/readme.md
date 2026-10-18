@@ -41,7 +41,7 @@ Either:
 Or, if already plugged in:
 
 1. Hold down the "Boot" button on the microcontroller
-1. Press and release the "Reset" button
+1. Press and release the board's reset switch
 1. Release the "Boot" button
 
 ### Reset button (double-tap)
@@ -171,7 +171,7 @@ Rationale and the protection parts: the hardware repo's [split connection notes]
 
 #### Connection throttling
 
-Every scan, the master runs its serial transactions with the slave, retrying a failed one up to 10 times with a 20ms handshake timeout each. After `SPLIT_MAX_CONNECTION_ERRORS` failed scans, the master throttles to one attempt per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms, and slave keypresses are dropped during that window.
+Every scan, the master runs its serial transactions with the slave, making up to 10 attempts at a failed one, each with a 20ms handshake timeout. After `SPLIT_MAX_CONNECTION_ERRORS` failed scans, the master throttles to one attempt per `SPLIT_CONNECTION_CHECK_TIMEOUT` ms, and slave keypresses are dropped during that window.
 
 #### Settings
 
