@@ -2,6 +2,8 @@
 
 [QMK](https://qmk.fm/) firmware for [splinter](https://github.com/andornaut/splinter-keyboard), a 62-key split columnar keyboard.
 
+**Status:** v4 firmware built, flashed, and confirmed working on the assembled keyboard.
+
 ![splinter](https://raw.githubusercontent.com/andornaut/splinter-keyboard/refs/heads/main/v3/v3.jpg)
 
 **Keyboard maintainer**: [andornaut](https://github.com/andornaut)
